@@ -8,8 +8,10 @@ from fifitools import StatusCodes, ContentType
 
 app = Flask(__name__)
 
-""" Content Type Checker"""
+""" config """
+app.config["JSON_DIR"] = "db_json"
 
+""" Content Type Checker"""
 
 def consumes(content_type):
     def _consumes(function):
@@ -23,6 +25,12 @@ def consumes(content_type):
 
     return _consumes
 
+""" Init """
+def init():
+    json_dir = app.config["JSON_DIR"]
+    if(os.path.exists(json_dir) == False):
+        os.mkdir(json_dir)
+init()
 
 """ Helth Check """
 
@@ -120,8 +128,10 @@ def model_delete(key: str)->bool:
     return True
 
 def get_json_file_path(key):
-    return key + '.json'
+    filename = key+'.json'
+    return os.path.join(app.config["JSON_DIR"], filename)
 
 
 if __name__ == '__main__':
+    app.init()
     app.run(debug=True)

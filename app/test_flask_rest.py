@@ -1,6 +1,6 @@
 #! coding:utf-8
 """
-app_test.py
+test_flask_rest.py
 http://momijiame.tumblr.com/post/39378516046/python-%E3%81%AE-flask-%E3%81%A7-rest-api-%E3%82%92%E4%BD%9C%E3%81%A3%E3%81%A6%E3%81%BF%E3%82%8B
 """
 
@@ -16,8 +16,11 @@ class FlaskrTestCase(unittest.TestCase):
 
     def setUp(self):
         self.app = flask_rest.app.test_client()
+        flask_rest.init()
 
     def tearDown(self):
+        import shutil
+        shutil.rmtree(flask_rest.app.config["JSON_DIR"])
         pass
 
     def test_helth(self):
@@ -25,17 +28,9 @@ class FlaskrTestCase(unittest.TestCase):
         response = self.app.post('/helth')
         self.assertEqual(response.status_code, 200)
 
-    def test_api_get(self):
-        """ test api get """
-
-        response = self.app.get('/api/key_is_fifi')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers['Content-Type'], ContentType.application_json)
-
     def test_api_get_invalid(self):
         response = self.app.get('/api/noting')
         self.assertEqual(response.status_code, StatusCodes.BadRequest400)
-
 
     def test_api_post(self):
         """ test api post """
@@ -43,7 +38,7 @@ class FlaskrTestCase(unittest.TestCase):
         content_body = json.dumps({'name': 'baz'}).encode("utf-8")
         assert type(content_body) == bytes
 
-        response = self.app.post('/api/key_is_fifi2',
+        response = self.app.post('/api/post_test',
                                  data=content_body,
                                  content_type=ContentType.application_json)
 
@@ -53,9 +48,9 @@ class FlaskrTestCase(unittest.TestCase):
         """ test api post """
 
         content_body = json.dumps({'name': 'fifi'})
-        response = self.app.post('/api/key_is_fifi',
+        response = self.app.post('/api/invalid_content_type',
                                  data=content_body,
-                                 content_type=ContentType.text_plain) # invalid
+                                 content_type=ContentType.text_plain)  # invalid
 
         self.assertEqual(response.status_code, StatusCodes.BadRequest400)
 
@@ -66,13 +61,13 @@ class FlaskrTestCase(unittest.TestCase):
         # post
         content_body_bytes = json.dumps({'name': 'baz'}).encode("utf-8")
         assert type(content_body_bytes) == bytes
-        response = self.app.post('/api/'+key,
+        response = self.app.post('/api/' + key,
                                  data=content_body_bytes,
                                  content_type=ContentType.application_json)
         self.assertEqual(response.status_code, StatusCodes.created)
 
         # get
-        response = self.app.get('/api/'+key)
+        response = self.app.get('/api/' + key)
         self.assertEqual(response.status_code, StatusCodes.OK200)
         self.assertEqual(response.headers['Content-Type'], ContentType.application_json)
         content_body_dict = json.loads(response.data.decode("utf-8"))
@@ -82,10 +77,11 @@ class FlaskrTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, StatusCodes.NoContent)
 
         # get No Contents
-        response = self.app.get('/api/'+key)
+        response = self.app.get('/api/' + key)
         self.assertEqual(response.status_code, StatusCodes.BadRequest400)
         self.assertEqual(response.headers['Content-Type'], ContentType.application_json)
         content_body_dict = json.loads(response.data.decode("utf-8"))
+
 
 if __name__ == '__main__':
     unittest.main()

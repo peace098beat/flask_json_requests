@@ -13,6 +13,7 @@ app.config["JSON_DIR"] = "db_json"
 
 """ Content Type Checker"""
 
+
 def consumes(content_type):
     def _consumes(function):
         @wraps(function)
@@ -25,11 +26,16 @@ def consumes(content_type):
 
     return _consumes
 
+
 """ Init """
+
+
 def init():
     json_dir = app.config["JSON_DIR"]
-    if(os.path.exists(json_dir) == False):
+    if (os.path.exists(json_dir) == False):
         os.mkdir(json_dir)
+
+
 init()
 
 """ Helth Check """
@@ -52,8 +58,8 @@ def get(key):
     content_body_dict = model_get(key)
     assert type(content_body_dict) == dict
 
-    if(content_body_dict == {}):
-        response = jsonify({"response":"Model Nothing"})
+    if (content_body_dict == {}):
+        response = jsonify({"response": "Model Nothing"})
         response.status_code = StatusCodes.BadRequest400
         return response
     else:
@@ -76,21 +82,23 @@ def post(key):
     response.headers['Location'] = url_for('get', key=key)
     return response
 
+
 @app.route('/api/<key>', methods=['DELETE'])
 def delete(key):
-
     result = model_delete(key)
 
     response = Response()
 
-    if(result):
+    if (result):
         response.status_code = StatusCodes.NoContent
     else:
         response.status_code = StatusCodes.BadRequest400
 
     return response
 
+
 """ Model Accesseres"""
+
 
 def model_set(key: str, value: dict):
     filename = get_json_file_path(key)
@@ -98,7 +106,7 @@ def model_set(key: str, value: dict):
         json.dump(value, fp)
 
 
-def model_get(key: str)-> dict:
+def model_get(key: str) -> dict:
     """ Load Model
     if not model : return None
     if exists json : return dict
@@ -106,7 +114,7 @@ def model_get(key: str)-> dict:
 
     filename = get_json_file_path(key)
 
-    if(os.path.exists(filename) is False):
+    if (os.path.exists(filename) is False):
         return {}
 
     with open(filename, "r") as fp:
@@ -115,7 +123,8 @@ def model_get(key: str)-> dict:
 
     return result
 
-def model_delete(key: str)->bool:
+
+def model_delete(key: str) -> bool:
     """ Model Delete"""
     filepath = get_json_file_path(key)
     try:
@@ -127,8 +136,9 @@ def model_delete(key: str)->bool:
 
     return True
 
+
 def get_json_file_path(key):
-    filename = key+'.json'
+    filename = key + '.json'
     return os.path.join(app.config["JSON_DIR"], filename)
 
 
